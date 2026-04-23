@@ -16,6 +16,7 @@ TIER_1_HOLDINGS = [
     "TSLA",
     "AAPL",
     "AMD",
+    "NFLX",
 ]
 
 # Tier 2: watchlist — interested but don't own yet. Only STRONG signals alert.
