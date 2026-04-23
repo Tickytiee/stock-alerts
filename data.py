@@ -7,7 +7,7 @@ the only file that changes.
 from __future__ import annotations
 
 import time
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import yfinance as yf
@@ -54,28 +54,63 @@ def _download_with_retry(ticker: str, start: date | None = None,
     raise DataFetchError(f"{ticker}: failed after {config.FETCH_RETRIES} tries: {last_err}")
 
 
+def _period_for_days(days: int) -> str:
+    """Map a number of trading days to a yfinance period string."""
+    if days <= 260:
+        return "1y"
+    if days <= 520:
+        return "2y"
+    if days <= 1300:
+        return "5y"
+    return "10y"
+
+
+def _oldest_cached_date(ticker: str):
+    """Return the earliest cached date for a ticker, or None."""
+    import sqlite3
+    with sqlite3.connect(config.DB_PATH) as c:
+        row = c.execute(
+            "SELECT MIN(date) FROM price_bars WHERE ticker = ?", (ticker,)
+        ).fetchone()
+    if not row or not row[0]:
+        return None
+    return datetime.strptime(row[0], "%Y-%m-%d").date()
+
+
 def fetch_history(ticker: str, days: int = None) -> pd.DataFrame:
     """Return the last `days` of price data, cache-first.
 
     Flow:
-      1. If nothing cached OR cache is very stale -> cold fetch full history
-      2. Else if cache is 1 day+ behind -> fetch only the gap and append
-      3. Return requested slice from cache
+      1. If nothing cached OR cache is very stale -> cold fetch enough history
+      2. Else if cache doesn't go back far enough for the request -> expand it
+      3. Else if cache is 1 day+ behind today -> fetch the gap and append
+      4. Return requested slice from cache
     """
     days = days or config.HISTORY_DAYS
     latest = storage.get_latest_date(ticker)
+    oldest = _oldest_cached_date(ticker)
     today = date.today()
 
+    # How much history the caller actually wants, in calendar days
+    calendar_days_needed = int(days * 1.5)  # ~1.5x to account for weekends/holidays
+    needed_start = today - timedelta(days=calendar_days_needed)
+
     if latest is None or (today - latest).days > config.CACHE_STALE_DAYS:
-        # Cold start or very stale — fetch full year
-        df = _download_with_retry(ticker, period="1y")
+        # Cold start or very stale — fetch enough for the request
+        period = _period_for_days(days)
+        df = _download_with_retry(ticker, period=period)
+        storage.save_bars(ticker, df)
+    elif oldest is not None and oldest > needed_start:
+        # Cache exists but doesn't reach far enough back — re-fetch full period
+        period = _period_for_days(days)
+        df = _download_with_retry(ticker, period=period)
         storage.save_bars(ticker, df)
     elif latest < today - timedelta(days=1):
-        # Warm cache, just fill the gap. We fetch from day after `latest`.
+        # Warm cache, just fill the gap
         gap_start = latest + timedelta(days=1)
         df = _download_with_retry(ticker, start=gap_start)
         storage.save_bars(ticker, df)
-    # else: cache is current, no fetch needed
+    # else: cache is current and deep enough, no fetch needed
 
     history = storage.get_history(ticker, days)
     if history.empty or len(history) < 50:

@@ -56,10 +56,11 @@ def _forward_return(df: pd.DataFrame, entry_date: pd.Timestamp, days: int) -> fl
 
 def _run_ticker(ticker: str, spy: pd.DataFrame) -> list[Trade]:
     """Walk through one ticker's history, fire signals, record forward returns."""
-    # We need more than HISTORY_DAYS for backtest. Fetch fresh full history.
+    # Need enough history: 252 for initial RSI/drawdown lookback + room for holds
     df = data.fetch_history(ticker, days=260 * BACKTEST_YEARS)
-    if df.empty or len(df) < 260:
-        print(f"[{ticker}] skipped — not enough history")
+    min_needed = 252 + max(HOLD_WINDOWS) + 20  # ~365 rows = ~1.5y minimum
+    if df.empty or len(df) < min_needed:
+        print(f"[{ticker}] skipped — only {len(df)} rows, need {min_needed}+")
         return []
 
     trades: list[Trade] = []
