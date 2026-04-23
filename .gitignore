@@ -1,0 +1,7 @@
+﻿.env
+alert_state.json
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/
+.idea/
