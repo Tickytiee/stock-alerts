@@ -8,27 +8,30 @@ import os
 
 # Tier 1: stocks you actually own. Any signal fires an alert.
 TIER_1_HOLDINGS = [
-    "NVDA",
-    "MSFT",
-    "GOOGL",
-    "AMZN",
-    "META",
-    "TSLA",
-    "AAPL",
-    "AMD",
-    "NFLX",
+    # Semiconductors (chip concentration is intentional)
+    "NVDA", "TSM", "AMD", "ON", "STM",
+    # Mega-cap tech
+    "MSFT", "GOOGL",
+    # Broad market / diversifier
+    "IVV",
+    # Healthcare / consumer
+    "NVO", "NFLX",
+    # NOT included: MSTY (options ETF, technicals meaningless),
+    #               SGOV (cash equivalent), DPZ (too small)
 ]
 
 # Tier 2: watchlist — interested but don't own yet. Only STRONG signals alert.
 TIER_2_WATCHLIST = [
-    # AI / Semis
-    "TSM", "ASML", "AVGO", "AMAT", "LRCX", "MU",
+    # AI / Semis (TSM removed — now in Tier 1)
+    "ASML", "AVGO", "AMAT", "LRCX", "MU",
     # Hyperscale / cloud / enterprise
     "ORCL", "CRM", "NOW", "SNOW",
     # AI software / platforms / security
     "PLTR", "DDOG", "NET", "CRWD",
     # Other tech standouts
     "ARM", "SHOP",
+    # Mega-caps not held
+    "AMZN", "META", "TSLA", "AAPL",
 ]
 
 # ---------------------------------------------------------------------------
