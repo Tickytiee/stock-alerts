@@ -26,16 +26,19 @@ def _download_with_retry(ticker: str, start: date | None = None,
     last_err: Exception | None = None
     for attempt in range(1, config.FETCH_RETRIES + 1):
         try:
+            # auto_adjust=False so prices match what users see on
+            # Yahoo Finance / Robinhood / brokerages. Dividends are small
+            # relative to drawdown signals, so this is the right tradeoff.
             if start:
                 df = yf.download(
                     ticker, start=start.isoformat(),
-                    progress=False, auto_adjust=True,
+                    progress=False, auto_adjust=False,
                     timeout=config.FETCH_TIMEOUT_SEC,
                 )
             else:
                 df = yf.download(
                     ticker, period=period or "1y",
-                    progress=False, auto_adjust=True,
+                    progress=False, auto_adjust=False,
                     timeout=config.FETCH_TIMEOUT_SEC,
                 )
             if df is None or df.empty:
