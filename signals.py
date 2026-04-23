@@ -32,13 +32,16 @@ def compute_rsi(prices: pd.Series, period: int = 14) -> float:
     return float(rsi.iloc[-1])
 
 
-def compute_drawdown_pct(prices: pd.Series) -> tuple[float, float]:
+def compute_drawdown_pct(history: pd.DataFrame) -> tuple[float, float]:
     """
     Returns (drawdown_pct, high_52w).
     drawdown_pct is negative: e.g. -15.3 means price is 15.3% below 52w high.
+    Uses the intraday High column for the 52w peak — this matches what brokers
+    and Yahoo Finance show as the 52-week high.
     """
-    high = float(prices.max())
-    current = float(prices.iloc[-1])
+    # Intraday high over the window — matches broker/Yahoo display
+    high = float(history["High"].max()) if "High" in history.columns else float(history["Close"].max())
+    current = float(history["Close"].iloc[-1])
     dd = (current - high) / high * 100
     return dd, high
 
@@ -49,7 +52,7 @@ def detect_signals(history: pd.DataFrame) -> list[Signal]:
     close = history["Close"]
 
     rsi = compute_rsi(close)
-    drawdown_pct, high = compute_drawdown_pct(close)
+    drawdown_pct, high = compute_drawdown_pct(history)
     current_price = float(close.iloc[-1])
 
     # Signal 1: RSI oversold
@@ -82,5 +85,5 @@ def summary_line(ticker: str, history: pd.DataFrame) -> str:
     close = history["Close"]
     price = float(close.iloc[-1])
     rsi = compute_rsi(close)
-    dd, _ = compute_drawdown_pct(close)
+    dd, _ = compute_drawdown_pct(history)
     return f"{ticker}: ${price:.2f} | RSI {rsi:.1f} | DD {dd:.1f}%"
