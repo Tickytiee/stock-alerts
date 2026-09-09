@@ -48,7 +48,6 @@ DRAWDOWN_PCT_STRONG = 20   # strong trigger
 # DCA reminder settings
 # ---------------------------------------------------------------------------
 
-DCA_AMOUNT_THB = 5000
 DCA_START_DAY = 1    # reminder: base allocation + opportunistic reserve
 DCA_DEADLINE_DAY = 25  # reminder: deploy remaining, don't carry cash
 
@@ -75,3 +74,4 @@ FETCH_RETRIES = 3
 FETCH_TIMEOUT_SEC = 15
 CACHE_STALE_DAYS = 7  # if cache older than this, fetch full year fresh
 HISTORY_DAYS = 260    # ~1 year of trading days
+

@@ -86,9 +86,9 @@ Run this quarterly to check if thresholds still make sense.
 
 ## How DCA reminders work
 
-You have 5,000 THB/month. The bot reminds you:
-- **1st of month:** deploy ~3,000 base, hold ~2,000 for opportunistic dips
-- **25th of month:** deploy whatever's left, no cash carried forward
+Set your monthly budget with `DCA_AMOUNT_THB` in `config.py`. The bot reminds you:
+- **1st of month:** deploy a base portion, hold the rest for opportunistic dips
+- **25th of month:** deploy whatever's left — no cash carried forward
 
 The second rule is critical — cash sitting on the sidelines waiting for "the perfect dip" is the biggest DCA failure mode. The bot enforces the discipline.
 
@@ -129,5 +129,3 @@ TSM, ASML, AVGO, AMAT, LRCX, MU, ORCL, CRM, NOW, SNOW, PLTR, DDOG, NET, CRWD, AR
 **Signals inform decisions, don't make them.** RSI < 30 means "oversold right now," not "buy now." Always check news and fundamentals before acting.
 
 **Don't optimize for more alerts.** The goal is a few high-quality signals per month, not a dashboard full of noise. If you're getting too many alerts, raise the thresholds in `config.py`.
-
-**The real lever for your 15M THB goal is your contribution rate.** This bot improves DCA timing at the margins. Doubling your monthly contribution in a few years will do more than any signal tuning ever will.

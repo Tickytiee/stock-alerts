@@ -54,27 +54,6 @@ def _process_tier(tickers: list[str], tier: str, today: str,
     return alerts, errors
 
 
-def _dca_reminder(today_date: date) -> str | None:
-    """Return a DCA reminder message if today is the 1st or 25th, else None."""
-    day = today_date.day
-
-    if day == config.DCA_START_DAY:
-        return (
-            f"💰 **DCA Day — Month Start**\n"
-            f"Deploy base allocation: ~3,000 THB\n"
-            f"Reserve ~2,000 THB for opportunistic dips this month\n"
-            f"(Remember: the 25th is the deadline — no cash carried over)"
-        )
-
-    if day == config.DCA_DEADLINE_DAY:
-        return (
-            f"⏰ **DCA Deadline — Month End Approaching**\n"
-            f"If you haven't deployed the full {config.DCA_AMOUNT_THB:,} THB yet, "
-            f"deploy the rest now. Don't carry cash into next month."
-        )
-
-    return None
-
 
 def _health_check(today_date: date) -> str | None:
     """Return a weekly 'alive' message on the configured weekday."""
