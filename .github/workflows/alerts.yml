@@ -9,23 +9,34 @@ on:
 jobs:
   run-alerts:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # needed to commit prices.db + state back
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
       - name: Cache pip
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: pip-${{ hashFiles('requirements.txt') }}
 
+      - name: Restore bot state
+        uses: actions/cache@v5
+        with:
+          path: |
+            prices.db
+            alert_state.json
+          key: bot-state-${{ github.run_id }}
+          restore-keys: |
+            bot-state-
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python test_signals.py
 
       - name: Run alerts
         env:
@@ -33,11 +44,3 @@ jobs:
           DISCORD_CANDIDATES_URL: ${{ secrets.DISCORD_CANDIDATES_URL }}
           DISCORD_ERRORS_URL:     ${{ secrets.DISCORD_ERRORS_URL }}
         run: python main.py
-
-      - name: Commit updated cache + state
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add prices.db alert_state.json 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "Update cache + state [skip ci]"
-          git push || true
