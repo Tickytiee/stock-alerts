@@ -7,3 +7,5 @@ __pycache__/
 .idea/
 prices.db
 alert_state.json
+prices.db
+alert_state.json
