@@ -1,0 +1,48 @@
+name: Weekly DCA Digest
+
+on:
+  schedule:
+    # Sundays 12:00 UTC = 19:00 Bangkok. Right before the trading week starts.
+    - cron: "0 12 * * 0"
+  workflow_dispatch:
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ hashFiles('requirements.txt') }}
+
+      - name: Cache prices.db + state
+        uses: actions/cache@v4
+        with:
+          path: |
+            prices.db
+            alert_state.json
+          key: data-${{ github.run_id }}
+          restore-keys: |
+            data-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run tests
+        run: python test_signals.py
+
+      - name: Run weekly digest
+        env:
+          DISCORD_ALERTS_URL:     ${{ secrets.DISCORD_ALERTS_URL }}
+          DISCORD_CANDIDATES_URL: ${{ secrets.DISCORD_CANDIDATES_URL }}
+          DISCORD_ERRORS_URL:     ${{ secrets.DISCORD_ERRORS_URL }}
+        run: python weekly_digest.py
